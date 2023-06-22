@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Task Assignment</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1>Task Assignment</h1>
+    <form id="assignment-form">
+      <div class="mb-3">
+        <label for="task-select" class="form-label">Task</label>
+        <select id="task-select" class="form-select">
+          <!-- Options will be populated dynamically using JavaScript -->
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="member-select" class="form-label">Member</label>
+        <select id="member-select" class="form-select">
+          <!-- Options will be populated dynamically using JavaScript -->
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="hourly-rate" class="form-label">Hourly Rate</label>
+        <input type="number" class="form-control" id="hourly-rate" placeholder="Enter hourly rate">
+      </div>
+      <button type="submit" class="btn btn-primary">Assign Task</button>
+    </form>
+  </div>
+  <script src="../controllers/TaskAssignmentController.js"></script>
+  <script src="../controllers/TaskManagementController.js"></script>
+  <script src="../controllers/UserController.js"></script>
+  <script src="../models/Task.js"></script>
+  <script src="../models/User.js"></script>
+  <script src="../models/TaskAssignment.js"></script>
+  <script src="../js/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+</body

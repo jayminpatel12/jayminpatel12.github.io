@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/lumen/bootstrap.min.css" integrity="sha384-GzaBcW6yPIfhF+6VpKMjxbTx6tvR/yRd/yJub90CqoIn2Tz4rRXlSpTFYMKHCifX" crossorigin="anonymous">
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Admin Dashboard</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        
+      </ul>
+      <form class="form-inline my-2 my-lg-0">
+        <a style="display: block; height: 40px; width: 100px; margin-top: 10px;" onclick="logout()"
+              class="btn btn-primary">Logout</a>
+      </form>
+    </div>
+  </nav>
+  <div class="container">
+    <div id="admin-dashboard" style="display: block;">
+      <div class="card mt-5">
+        <div class="card-body">
+         
+
+          <h2 class="mt-4" id="dashboardTitle">Task List</h2>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Task ID</th>
+                  <th>Task Name</th>
+                  <th>Task Description</th>
+                  <th>Assigned Member</th>
+                  <th>Assigned Date</th>
+                  <th>Status</th>
+                  <th>Total Hours Worked</th>
+                  <th>Hourly Rate(CAD)</th>
+                  <th>Updated Date</th>
+                  <th>Total Cost Incurred(CAD)</th>
+                </tr>
+              </thead>
+              <tbody id="task-list"></tbody>
+            </table>
+            <a href="task_creation.html" class="btn btn-info float-end" id="add-task-link">Add Task</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+  <script src="../controllers/TaskManagementController.js"></script>
+  <script src="../controllers/AuthenticationController.js"></script>
+  <script src="../models/Task.js"></script>
+  <script>
+    const taskManagementController = new TaskManagementController();
+    // taskManagementController.getAllTasks();
+    //Fill out table with tasks
+    let taskList = document.getElementById('task-list');
+
+    //set dashboard title
+    let dashboardTitle = document.getElementById('dashboardTitle');
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+    dashboardTitle.innerHTML = `Welcome ${currentUser.name}`;
+
+    function fillOutTable(tasks) {
+      console.log("Entered fillOutTable");
+      console.log(tasks);
+      console.log(currentUser.email);
+      const adminTasks = tasks.filter(task => task.taskCreatedBy.email == currentUser.email);
+      console.log(adminTasks);
+      //Add tasks to table
+      for (let i = 0; i < adminTasks.length; i++) {
+        let task = adminTasks[i];
+        let row = document.createElement('tr');
+        row.innerHTML = `
+                <td>${task.taskId}</td>
+                <td>${task.taskName}</td>
+                <td>${task.taskDescription}</td>
+                <td>${task.assignedMember.email}</td>
+                <td>${task.taskAssignedDate}</td>
+                <td>${task.status}</td>
+                <td>${task.totalHoursWorked == 0 ? "N/A" : task.totalHoursWorked}</td>
+                <td>${task.taskCost}</td>
+                <td>${task.taskUpdatedDate}</td>
+                <td>${task.totalHoursWorked == 0 ? "N/A" : task.totalHoursWorked * task.taskCost}</td>
+            `;
+        taskList.appendChild(row);
+      }
+    }
+
+    let tasks = taskManagementController.getAllTasks();
+    fillOutTable(tasks);
+
+    function logout() {
+      new AuthenticationController().logout();
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Create Task</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/lumen/bootstrap.min.css" integrity="sha384-GzaBcW6yPIfhF+6VpKMjxbTx6tvR/yRd/yJub90CqoIn2Tz4rRXlSpTFYMKHCifX" crossorigin="anonymous">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .card {
+      margin-top: 50px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-title {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 24px;
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+		<a class="navbar-brand" href="admin_dashboard.html">Admin Dashboard</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		  <span class="navbar-toggler-icon"></span>
+		</button>
+	  
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		  <ul class="navbar-nav mr-auto">
+			
+		  </ul>
+		  <form class="form-inline my-2 my-lg-0">
+			<a style="display: block; height: 40px; width: 100px; margin-top: 10px;" onclick="logout()"
+				  class="btn btn-primary">Logout</a>
+		  </form>
+		</div>
+	  </nav>
+  <div class="container">
+    <div class="card mt-5">
+      <div class="card-body">
+        <h1 class="card-title">Create Task</h1>
+        <form id="task-form" onsubmit="event.preventDefault();">
+          <div class="mb-3">
+            <label for="task-name" class="form-label">Task Name</label>
+            <input type="text" class="form-control" id="task-name" placeholder="Enter task name" required>
+            <div class="invalid-feedback">Please enter the task name.</div>
+          </div>
+          <div class="mb-3">
+            <label for="task-description" class="form-label">Task Description</label>
+            <textarea class="form-control" id="task-description" placeholder="Enter task description"
+              required></textarea>
+            <div class="invalid-feedback">Please enter the task description.</div>
+          </div>
+          <div class="mb-3">
+            <label for="users" class="form-label">Assign To</label>
+            <select id="users" class="form-select" required>
+              <!-- Options will be populated dynamically using JavaScript -->
+              <option value="" disabled>Select a member</option>
+            </select>
+            <div class="invalid-feedback">Please select a member.</div>
+          </div>
+          <div class="mb-3">
+            <label for="hourly-rate" class="form-label">Hourly Rate</label>
+            <input type="number" class="form-control" id="hourly-rate" placeholder="Enter hourly rate" required>
+            <div class="invalid-feedback">Please enter a valid hourly rate. Minimum rate is 15.</div>
+          </div>
+          <div class="mb-3">
+            <label for="start-date" class="form-label">Start Date</label>
+            <input type="date" class="form-control" id="start-date" required>
+            <div class="invalid-feedback">Please enter valid start date.</div>
+          </div>
+          <div class="mb-3">
+            <label for="end-date" class="form-label">End Date</label>
+            <input type="date" class="form-control" id="end-date" required>
+            <div class="invalid-feedback">Please enter valid end date.</div>
+          </div>
+          <button type="submit" class="btn btn-primary" onclick="createTask()">Create Task</button>
+          <button type="submit" class="btn btn-secondary" onclick="navigateToDashboard()">View Dashboard</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+  <script src="../controllers/TaskManagementController.js"></script>
+  <script src="../models/Task.js"></script>
+  <script src="../controllers/UserController.js"></script>
+  <script type="text/javascript">
+    let taskManagementController = new TaskManagementController();
+    taskManagementController.getAllTasks();
+    let userController = new UserController();
+    let users = userController.getAllMembers();
+
+    function createTask() {
+      const taskNameInput = document.getElementById("task-name");
+      const taskDescriptionInput = document.getElementById("task-description");
+      const startDateInput = document.getElementById("start-date");
+      const endDateInput = document.getElementById("end-date");
+      const memberIdInput = document.getElementById("users");
+      const hourlyRateInput = document.getElementById("hourly-rate");
+      const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
+
+      // Validate data before creating task
+      const taskName = taskNameInput.value;
+      const taskDescription = taskDescriptionInput.value;
+      const startDate = startDateInput.value;
+      const endDate = endDateInput.value;
+      const memberId = memberIdInput.value;
+      const hourlyRate = hourlyRateInput.value;
+
+      // Reset validation states
+      taskNameInput.classList.remove("is-invalid");
+      taskDescriptionInput.classList.remove("is-invalid");
+      startDateInput.classList.remove("is-invalid");
+      endDateInput.classList.remove("is-invalid");
+      memberIdInput.classList.remove("is-invalid");
+      hourlyRateInput.classList.remove("is-invalid");
+
+      // Validate task name
+      if (taskName.trim() === "") {
+        taskNameInput.classList.add("is-invalid");
+        return;
+      }
+
+      // Validate task description
+      if (taskDescription.trim() === "") {
+        taskDescriptionInput.classList.add("is-invalid");
+        return;
+      }
+
+      // Validate member assignment
+      if (memberId === "") {
+        memberIdInput.classList.add("is-invalid");
+        return;
+      }
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+
+      // Validate hourly rate
+      if (hourlyRate.trim() === "" || parseFloat(hourlyRate) < 15) {
+        hourlyRateInput.classList.add("is-invalid");
+        return;
+      }
+
+      // Validate start date
+      if (dateRegex.test(startDate.value)) {
+        startDateInput.classList.add("is-invalid");
+        return;
+      }
+
+      // Validate end date
+      if (dateRegex.test(endDate.value)) {
+        endDateInput.classList.add("is-invalid");
+        return;
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      // Validate start date is less than or equal to end date
+      if (startDate < today) {
+        startDateInput.classList.add("is-invalid");
+        return;
+      }
+      if (startDate > endDate) {
+        startDateInput.classList.add("is-invalid");
+        endDateInput.classList.add("is-invalid");
+        return;
+      }
+
+      //Get user with specific id from users array
+      const assignedMember = users.find(user => user.userId == memberId);
+      console.log(assignedMember);
+
+      taskManagementController.createTask(taskName, taskDescription, startDate, endDate, assignedMember, hourlyRate, currentUser);
+      alert("Task created successfully!")
+      // Clear form
+      document.getElementById("task-form").reset();
+    }
+
+    function populateMembers(users) {
+      const taskMember = document.getElementById("users");
+      users.forEach(user => {
+        if (user.role == "member") {
+          const option = document.createElement("option");
+          option.value = user.userId;
+          option.text = user.email;
+          taskMember.appendChild(option);
+        }
+      });
+    }
+
+    function navigateToDashboard() {
+      window.location.href = "admin_dashboard.html";
+      window.reload();
+    }
+
+    populateMembers(users);
+
+    const formElement = document.getElementById("task-form");
+    formElement.addEventListener("change", function (event) {
+      event.preventDefault();
+      const changedElement = event.target;
+      const today = new Date().toISOString().split('T')[0];
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      const changedElementId = changedElement.id;
+      console.log(changedElement)
+      //perform validation for each fields inside the form separately
+      switch (changedElementId) {
+        case "task-name":
+          if (changedElement.value.trim() === "") {
+            changedElement.classList.add("is-invalid");
+            changedElement.classList.remove("is-valid");
+          } else {
+            changedElement.classList.remove("is-invalid");
+            changedElement.classList.add("is-valid");
+          }
+          break;
+        case "task-description":
+          if (changedElement.value.trim() === "") {
+            changedElement.classList.add("is-invalid");
+            changedElement.classList.remove("is-valid");
+          } else {
+            changedElement.classList.remove("is-invalid");
+            changedElement.classList.add("is-valid");
+          }
+          break;
+        case "start-date":
+          if (!dateRegex.test(changedElement.value) || changedElement.value < today) {
+            changedElement.classList.add("is-invalid");
+            changedElement.classList.remove("is-valid");
+          } else {
+            changedElement.classList.remove("is-invalid");
+            changedElement.classList.add("is-valid");
+          }
+          break;
+        case "end-date":
+          const startDateInput = document.getElementById("start-date");
+          const isValidStartDate = dateRegex.test(startDateInput.value) && startDateInput.value >= today;
+          startDate = isValidStartDate ? startDateInput.value : new Date(0);
+          if (!dateRegex.test(changedElement.value) || changedElement.value < startDate || changedElement.value < today) {
+            changedElement.classList.add("is-invalid");
+            changedElement.classList.remove("is-valid");
+          } else {
+            changedElement.classList.remove("is-invalid");
+            changedElement.classList.add("is-valid");
+          }
+          break;
+        case "hourly-rate":
+          if (changedElement.value.trim() === "" || parseFloat(changedElement.value) < 15) {
+            changedElement.classList.add("is-invalid");
+            changedElement.classList.remove("is-valid");
+          } else {
+            changedElement.classList.remove("is-invalid");
+            changedElement.classList.add("is-valid");
+          }
+          break;
+        case "assigned-member":
+          if (changedElement.value === "") {
+            changedElement.classList.add("is-invalid");
+            changedElement.classList.remove("is-valid");
+          } else {
+            changedElement.classList.remove("is-invalid");
+            changedElement.classList.add("is-valid");
+          }
+          break;
+        default:
+          break;
+      }
+    });
+
+  </script>
+</body>
+
+</html>

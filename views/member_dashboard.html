@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Member Dashboard</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/lumen/bootstrap.min.css" integrity="sha384-GzaBcW6yPIfhF+6VpKMjxbTx6tvR/yRd/yJub90CqoIn2Tz4rRXlSpTFYMKHCifX" crossorigin="anonymous">
+</head>
+
+<body>
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+		<a class="navbar-brand" href="#">Member Dashboard</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		  <span class="navbar-toggler-icon"></span>
+		</button>
+	  
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		  <ul class="navbar-nav mr-auto">
+			
+		  </ul>
+		  <form class="form-inline my-2 my-lg-0">
+			<a style="display: block; height: 40px; width: 100px; margin-top: 10px;" onclick="logout()"
+				  class="btn btn-primary">Logout</a>
+		  </form>
+		</div>
+	  </nav>
+	<div class="container">
+		<div id="member-dashboard" style="display: block;">
+			<div class="card mt-5">
+				<div class="card-body">
+					<!-- <div class="d-flex justify-content-between">
+								<h1 class="card-title">Member Dashboard</h1>
+								<a style="display: block; height: 40px; width: 100px; margin-top: 20px;"
+									onclick="logout()" class="btn btn-primary">Logout</a>
+							</div> -->
+
+					
+					<!-- Task list -->
+					<h2 class="mt-4" id="memberDashboard">Welcome</h2>
+					<table class="table">
+						<thead>
+							<tr>
+								<th></th>
+								<th>Task ID</th>
+								<th>Task Name</th>
+								<th>Task Description</th>
+								<th>Status</th>
+								<th>Total Hours Worked</th>
+								<th>Hourly Rate(CAD)</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody id="task-list"></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+	<script src="../controllers/TaskManagementController.js"></script>
+	<script src="../controllers/AuthenticationController.js"></script>
+	<script src="../models/Task.js"></script>
+	<script>
+		const taskManagementController = new TaskManagementController();
+
+		// Fill out table with tasks
+		let taskList = document.getElementById('task-list');
+		//fill out memberdashboard with current user name using session storage
+		let memberDashboard = document.getElementById('memberDashboard');
+		memberDashboard.innerHTML = `Welcome ${JSON.parse(sessionStorage.getItem("currentUser")).name}`;
+
+		function fillOutTable(tasks) {
+			//read currentUser from sessionStorage and get email of currentUser
+			console.log(tasks)
+			const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+			console.log(currentUser)
+			const userTasks = tasks.filter(task => task.assignedMember.email == currentUser.email);
+			console.log(userTasks);
+			userTasks.forEach(task => {
+				if (task.status != "Complete") {
+					let row = document.createElement('tr');
+					row.innerHTML = `
+        <td><input type="checkbox" class="task-checkbox" value="${task.taskId}" onchange="toggleSubmitButton(this)"></td>
+        <td>${task.taskId}</td>
+        <td>${task.taskName}</td>
+        <td>${task.taskDescription}</td>
+        <td>${task.status}</td>
+        <td><input type="text" class="form-control hours-input" data-task-id="${task.taskId}" placeholder="Enter hours worked"></td>
+        <td>${task.taskCost}</td>
+        <td><button type="button" class="btn btn-primary submit-button" data-task-id="${task.taskId}" onClick="submitTask('${task.taskId}')" disabled>Submit Hours</button></td>
+      `;
+					taskList.appendChild(row);
+				}
+			});
+
+			if (taskList.innerHTML === "") {
+				taskList.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center;">No tasks available</td>
+      </tr>
+    `;
+			}
+		}
+
+
+		function toggleSubmitButton(checkbox) {
+			const submitButton = checkbox.closest('tr').querySelector('.submit-button');
+			submitButton.disabled = !checkbox.checked;
+		}
+
+		function submitTask(taskId) {
+			const hoursInput = document.querySelector(`.hours-input[data-task-id="${taskId}"]`);
+			if (hoursInput) {
+				const hoursWorked = hoursInput.value;
+				if (hoursWorked === "") {
+					alert("Please enter hours worked");
+					return;
+				} else {
+					const taskResult = taskManagementController.updateTask(taskId, hoursWorked);
+					if (taskResult) {
+						alert("Task updated successfully");
+						location.reload();
+					} else {
+						alert("Task update failed");
+					}
+				}
+
+			} else {
+				console.error("Hours input element not found for task:", taskId);
+			}
+		}
+
+		const tasks = taskManagementController.getAllTasks();
+		fillOutTable(tasks);
+
+		function logout() {
+			new AuthenticationController().logout();
+		}
+	</script>
+</body>
+
+</html>
